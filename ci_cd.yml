@@ -1,0 +1,48 @@
+
+name: Databricks CD with Personal Access Token
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to Deploy to'
+        required: true
+        type: choice
+        options:
+          - 'uat'
+          - 'prd'
+        default: 'prd'
+
+permissions:
+        id-token: write
+        contents: read
+
+jobs:
+  deploy:
+    environment: ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4 
+      
+      - name: Set Environment Variables
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "prd" ]; then
+            echo "DATABRICKS_HOST=<DatabricksWorkSpaceURL>" >> $GITHUB_ENV
+            echo "DATABRICKS_TOKEN=<PersonalAccessToken>" >> $GITHUB_ENV
+          else
+            echo "DATABRICKS_HOST=<DatabricksWorkSpaceURL>" >> $GITHUB_ENV
+            echo "DATABRICKS_TOKEN=<PersonalAccessToken>" >> $GITHUB_ENV
+          fi
+          
+      - name: install-databricks-cli
+        uses: microsoft/install-databricks-cli@v1.0.0
+       
+          
+      - name: Import Databricks notebooks
+        uses: microsoft/databricks-import-notebook@v1.0.0
+        with:
+          databricks-host: ${{ env.DATABRICKS_HOST }}
+          databricks-token: ${{ env.DATABRICKS_TOKEN }}
+          local-path: /home/runner/work/DataAnalytics/DataAnalytics/
+          remote-path: /Workspace/Users/adb_adm_01@outlook.com
